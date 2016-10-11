@@ -42,6 +42,8 @@ namespace FluentBehaviourTree
         {
             if (!iscompleted)
             {
+                bool hasrunning = false;
+
                 while (current != null)
                 {
                     var status = current.Value.Action.Tick(time);
@@ -51,11 +53,21 @@ namespace FluentBehaviourTree
                         iscompleted = true;
                         return status;
                     }
+                    else if(status== BehaviourTreeStatus.Running)
+                    {
+                        hasrunning = true;
+                    }
 
                     current = current.Next;
                 }
 
-                
+                //if has running node, continue wait 
+                if(hasrunning)
+                {
+                    //reset current position to first
+                    current = children.First;
+                    return BehaviourTreeStatus.Running;
+                }
 
                 iscompleted = true;
             }
