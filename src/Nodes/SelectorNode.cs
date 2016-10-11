@@ -16,24 +16,48 @@ namespace FluentBehaviourTree
         private string name;
 
         /// <summary>
+        /// node sequence is completed.
+        /// </summary>
+        private bool iscompleted;
+
+        /// <summary>
         /// List of child nodes.
         /// </summary>
-        private List<IBehaviourTreeNode> children = new List<IBehaviourTreeNode>(); //todo: optimization, bake this to an array.
+        private LinkedList<NodeStatusPair> children;
+
+        /// <summary>
+        /// current child position.
+        /// </summary>
+        private LinkedListNode<NodeStatusPair> current;
+
 
         public SelectorNode(string name)
         {
             this.name = name;
+            this.iscompleted = false;
+            this.children = new LinkedList<NodeStatusPair>();
         }
 
         public BehaviourTreeStatus Tick(TimeData time)
         {
-            foreach (var child in children)
+            if (!iscompleted)
             {
-                var childStatus = child.Tick(time);
-                if (childStatus != BehaviourTreeStatus.Failure)
+                while (current != null)
                 {
-                    return childStatus;
+                    var status = current.Value.Action.Tick(time);
+
+                    if (status == BehaviourTreeStatus.Success)
+                    {
+                        iscompleted = true;
+                        return status;
+                    }
+
+                    current = current.Next;
                 }
+
+                
+
+                iscompleted = true;
             }
 
             return BehaviourTreeStatus.Failure;
@@ -44,7 +68,14 @@ namespace FluentBehaviourTree
         /// </summary>
         public void AddChild(IBehaviourTreeNode child)
         {
-            children.Add(child);
+            NodeStatusPair nspair = new NodeStatusPair
+            {
+                Action = child,
+                Status = BehaviourTreeStatus.Success
+            };
+
+            children.AddLast(nspair);
+            current = children.First;
         }
     }
 }

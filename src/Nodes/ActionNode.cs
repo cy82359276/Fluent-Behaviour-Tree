@@ -15,21 +15,24 @@ namespace FluentBehaviourTree
         /// </summary>
         private string name;
 
+        public BehaviourTreeStatus Status { get; set; }
+
         /// <summary>
         /// Function to invoke for the action.
         /// </summary>
         private Func<TimeData, BehaviourTreeStatus> fn;
-        
+
 
         public ActionNode(string name, Func<TimeData, BehaviourTreeStatus> fn)
         {
-            this.name=name;
-            this.fn=fn;
+            this.name = name;
+            this.fn = fn;
         }
 
         public BehaviourTreeStatus Tick(TimeData time)
         {
-            return fn(time);
+            Status = fn(time);
+            return Status;
         }
     }
 }
